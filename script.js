@@ -1,32 +1,49 @@
-function appendToDisplay(value) {
-    let display = document.getElementById("out");
-
-    // Prevent multiple leading zeros
-    if (display.innerText === "0" && value !== ".") {
-        display.innerText = value;
-    } else {
-        display.innerText += value;
+// Pure function: Handles appending values to the display string
+const appendValue = (currentDisplay, value) => {
+    if (currentDisplay === "0" && value !== ".") {
+        return value;
     }
-}
+    return currentDisplay + value;
+};
 
-function clearDisplay() {
-    document.getElementById("out").innerText = "0";
-}
+// Pure function: Clears the display to "0"
+const clearValue = () => "0";
 
-function calculateResult() {
-    let display = document.getElementById("out");
-
+// Pure function: Evaluates the expression safely
+const evaluateExpression = (expression) => {
     try {
-        // Evaluate the expression
-        let result = eval(display.innerText);
-
-        // If the result is undefined or invalid, don't update display
-        if (result === undefined || result === Infinity || isNaN(result)) {
-            display.innerText = "Error";
-        } else {
-            display.innerText = result;
-        }
-    } catch (error) {
-        display.innerText = "Error";
+        let result = Function(`"use strict"; return (${expression})`)();
+        return (result === undefined || result === Infinity || isNaN(result)) ? "Error" : result.toString();
+    } catch {
+        return "Error";
     }
-}
+};
+
+// UI update function (isolates side effects)
+const updateDisplay = (newValue) => {
+    document.getElementById("out").innerText = newValue;
+};
+
+// Event listeners
+document.addEventListener("DOMContentLoaded", () => {
+    let display = "0";
+    updateDisplay(display);
+
+    document.querySelectorAll(".num").forEach((button) => {
+        button.addEventListener("click", (event) => {
+            const value = event.target.innerText;
+            display = appendValue(display, value);
+            updateDisplay(display);
+        });
+    });
+
+    document.querySelector(".num1:first-child").addEventListener("click", () => {
+        display = clearValue();
+        updateDisplay(display);
+    });
+
+    document.querySelector(".num1:last-child").addEventListener("click", () => {
+        display = evaluateExpression(display);
+        updateDisplay(display);
+    });
+});
